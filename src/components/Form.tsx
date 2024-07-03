@@ -1,39 +1,45 @@
-import { useState, ChangeEvent, FormEvent, Dispatch} from "react"
+import { useState, ChangeEvent, FormEvent, Dispatch } from "react"
+import { v4 as uuidv4} from 'uuid'
 import { Activity } from "../types"
 import { categories } from "../data/categories"
 import { ActivityActions } from "../reducers/activity-reducers"
 
 type FormProps = {
-    dispatch : Dispatch<ActivityActions>
+    dispatch: Dispatch<ActivityActions>
 }
 
-export default function Form( {dispatch}:FormProps) {
+const initialState : Activity= {
+    id : uuidv4(),
+    category: 1,
+    name: '',
+    calories: 0
 
-    const [activity, setActivity] = useState <Activity>({
-        category: 1,
-        name: '',
-        calories: 0
+}
 
-    })
+export default function Form({ dispatch }: FormProps) {
 
-    const handleChange = (e : ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLInputElement>) =>{
+    const [activity, setActivity] = useState<Activity>(initialState)
+
+    const handleChange = (e: ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLInputElement>) => {
         const isNumberField = ["category", "calories"].includes(e.target.id)
         setActivity({
             ...activity,
             [e.target.id]: isNumberField ? +e.target.value : e.target.value
         })
-        
+
     }
 
-    const isValidActivity = () =>{
-        const { name, calories } = activity        
+    const isValidActivity = () => {
+        const { name, calories } = activity
         return name.trim() !== '' && calories > 0
     }
 
-    const handleSubmit = (e:FormEvent<HTMLFormElement>) =>{
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-            
-        dispatch({type:"save-activity",payload:{newActivity: activity}})
+
+        dispatch({ type: "save-activity", payload: { newActivity: activity } })
+
+        setActivity({...initialState,id : uuidv4()})
     }
 
     return (
@@ -46,7 +52,7 @@ export default function Form( {dispatch}:FormProps) {
                 <select
                     className="border border-slate-300 p-2 rounded-lg w-full bg-white"
                     id="category"
-                    value = {activity.category}
+                    value={activity.category}
                     onChange={handleChange}
                 >
                     {categories.map(category => (
@@ -61,8 +67,8 @@ export default function Form( {dispatch}:FormProps) {
             </div>
             <div className="grid grid-cols-1 gap-3">
                 <label htmlFor="name" className="font-bold"> Actividad:</label>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     id="name"
                     className="border border-slate-300 p-2 rounded-lg"
                     placeholder="Ej. Comida,Jugo de Naranja, Ensalada, Ejercicio, Pesas, Bicicleta"
@@ -72,8 +78,8 @@ export default function Form( {dispatch}:FormProps) {
             </div>
             <div className="grid grid-cols-1 gap-3">
                 <label htmlFor="calories" className="font-bold"> Calorias:</label>
-                <input 
-                    type="number" 
+                <input
+                    type="number"
                     id="calories"
                     className="border border-slate-300 p-2 rounded-lg"
                     placeholder="Calorias, Ej. 300 o 500"
@@ -82,8 +88,8 @@ export default function Form( {dispatch}:FormProps) {
                 />
             </div>
 
-            <input 
-                type="submit" 
+            <input
+                type="submit"
                 className="bg-gray-800 hover:bg-gray-900 w-full font-bold uppercase text-white cursor-pointer disabled:opacity-10"
                 value={`Guardar ${activity.category === 1 ? "comida" : 'ejercicio'}`}
                 disabled={!isValidActivity()}
