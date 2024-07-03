@@ -5,19 +5,18 @@ export type ActivityActions =
 { type: 'edit-activity', payload: {id: Activity['id']}} |
 { type: 'delete-activity', payload: {id: Activity['id']}} 
 
-type ActivityState = { 
+export type ActivityState = { 
     activities : Activity[],
     activeId: Activity['id']
 }
 
+const localStorageActivities = () : Activity[] => {
+    const activities = localStorage.getItem('activities')
+    return activities ? JSON.parse(activities) : []
+}
+
 export const initialState : ActivityState = {
-    activities : [{
-    id : "99bba929-629c-4850-8a34-6497924a4e13",
-    category: 1,
-    name: 'Trotar',
-    calories: 100
-    }
-    ],
+    activities : localStorageActivities(),
     activeId:''
 }
 
@@ -29,10 +28,19 @@ export const activityReducer = (
     if (action.type === 'save-activity'){
         // Este código maneja la logica para actualizar el estado
         
+        
+        let updatedActivities : Activity[] = []
+
+        if(state.activeId){
+            updatedActivities = state.activities.map(activity => activity.id === state.activeId ? action.payload.newActivity : activity)
+        }else {
+            updatedActivities = [...state.activities, action.payload.newActivity]
+        }
 
         return{
             ...state,
-            activities: [...state.activities, action.payload.newActivity]
+            activities: updatedActivities,
+            activeId: ''
         }
         
     }
@@ -42,6 +50,13 @@ export const activityReducer = (
              ...state,
              activeId: action.payload.id
          }
+    }
+
+    if (action.type === 'delete-activity'){
+        return{
+            ...state,
+            activities: state.activities.filter(activity => activity.id !== action.payload.id)
+        }
     }
 
     return state
